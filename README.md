@@ -11,3 +11,17 @@
 以上两条缺一不可，不然要么是N1无法连外网，要么无法解析DNS导致不能更新订阅
 5. 订阅，改密码，关闭无线接口 
 6. 建议试用一段时间，觉得新版本没问题再刷入emmc，在此期间就插着U盘使用
+7. 防火墙自定义参考：
+```
+iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 53
+iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 53
+iptables -I FORWARD -i zt44xcjxwe -j ACCEPT
+iptables -I FORWARD -o zt44xcjxwe  -j ACCEPT
+iptables -t nat -I POSTROUTING -o zt44xcjxwe -j MASQUERADE
+#iptables -t nat -A PREROUTING -d 192.168.123.2 -p tcp --dport 4433 -j DNAT --to-destination 192.168.123.15:443 
+#iptables -t nat -A POSTROUTING -s 0.0.0.0/0 -o br-lan -j SNAT --to 192.168.123.2
+# iptables -t nat -A PREROUTING -p tcp --dport 22 -j DROP
+# iptables -I FORWARD -d xx.xx.xx.xx -j DROP
+# iptables -t nat -I POSTROUTING -o br-lan -j MASQUERADE
+iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE
+```
