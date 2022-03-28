@@ -25,3 +25,51 @@ iptables -t nat -I POSTROUTING -o zt44xcjxwe -j MASQUERADE
 # iptables -t nat -I POSTROUTING -o br-lan -j MASQUERADE
 iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE
 ```
+
+- smartdns自定义配置
+```
+#/etc/smartdns/smartdns-domains.china.conf 加载中国域名文件，生成的脚本代码
+#https://github.com/huifukejian/test/blob/master/update-china-list.sh
+#定时脚本更新conf
+conf-file /etc/smartdns/smartdns-domains.china.conf
+
+#speed-check-mode tcp:443,tcp:80,ping
+#下面的bind  :6053会和基本设置的6053冲突，需要改基本设置的端口，比如改成6054,。端口冲突会导致服务无法运行。
+#root@N1:~# netstat -an|grep 605
+#udp        0      0 0.0.0.0:6053            0.0.0.0:*                           
+#udp        0      0 0.0.0.0:6054            0.0.0.0:* 
+bind  :6053 -group china
+bind  :5335 -group gfwlist
+
+#缓存网站个数,可以适当增加
+cache-size 512
+
+#停用IPv6
+force-AAAA-SOA yes
+
+#过期域名缓存
+serve-expired yes
+
+#缓存持久化
+cache-persist no
+
+# 开启域名预获取
+prefetch-domain yes
+
+# 设置 TTL 最小值和最大值
+rr-ttl-min 1800
+rr-ttl-max 86400
+
+#国内DNS
+server-https https://doh.pub/dns-query -group china -exclude-default-group
+server-https https://223.5.5.5/dns-query -group china -exclude-default-group
+server 61.177.7.1:53    -group china    -exclude-default-group
+
+#国外DNS
+# 如果部分地区存在TCP阻断53端口的情况，可以尝试把国外DNS换成DOT/DOH，如下
+#server-https https://1.1.1.1/dns-query    -group gfw    -exclude-default-group
+#server-tls 8.8.4.4:853                    -group gfw    -exclude-default-group
+server-tls 8.8.8.8:853 -group gfwlist
+server-tls 8.8.4.4:853 -group gfwlist
+server-tls 208.67.222.222:853 -group gfwlist
+```
