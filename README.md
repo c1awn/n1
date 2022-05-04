@@ -26,7 +26,7 @@ iptables -t nat -I POSTROUTING -o zt44xcjxwe -j MASQUERADE
 # iptables -t nat -I POSTROUTING -o br-lan -j MASQUERADE
 iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE
 ```
-8. 如果使用openclash，建议redir-host模式，fakeip虽然更快但是对国内也有影响
+8. 如果使用openclash，建议redir-host模式，fakeip虽然更快但是对国内也有影响。同样的梯子，clash或者quanx可以访问Netflix，ssr plus插件不一定可以，这个应该和DNS和Netflix的IP段有关系，特别是DNS，故如果ssr+无法观看Netflix，可以尝试clash。
 
 - smartdns自定义配置，此插件收效甚微
 ```
