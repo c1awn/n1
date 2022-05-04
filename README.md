@@ -26,8 +26,9 @@ iptables -t nat -I POSTROUTING -o zt44xcjxwe -j MASQUERADE
 # iptables -t nat -I POSTROUTING -o br-lan -j MASQUERADE
 iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE
 ```
+8. 如果使用openclash，建议redir-host模式，fakeip虽然更快但是对国内也有影响
 
-- smartdns自定义配置
+- smartdns自定义配置，此插件收效甚微
 ```
 #/etc/smartdns/smartdns-domains.china.conf 加载中国域名文件，生成的脚本代码
 #https://github.com/huifukejian/test/blob/master/update-china-list.sh
