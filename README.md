@@ -75,3 +75,21 @@ server-tls 8.8.8.8:853 -group gfwlist
 server-tls 8.8.4.4:853 -group gfwlist
 server-tls 208.67.222.222:853 -group gfwlist
 ```
+9.修改用户名root参考，改后重启。第六步不修改可能导致页面修改配置点保存后一直转圈“正在应用/修改”，虽然修改已经成功，很膈应。这个问题走了一些弯路，最开始以为是只读或者硬盘坏道导致，e2fsck 命令没有效果，检查坏块提示0坏块，所以和硬盘只读无关。
+```
+1.修改/etc/passwd
+将root:x:0:0:root:/root:/bin/ash修改为username:x:0:0:root:/root:/bin/ash。
+2.修改/etc/shadow
+将第一条root:修改为username:
+3.修改/usr/lib/lua/luci/controller/admin/index.lua
+将page.sysauth = “root” 修改为page.sysauth = “username”。
+4.修改/etc/config/rpcd
+将option username 'root' 改成 option username 'username'
+将option password '$p$root' 改成 option password '$p$username'
+5./usr/lib/lua/luci/view/sysauth.htm  
+<input class="cbi-input-user" type="text" name="luci_username" value="<%=duser%>" />
+改为
+<input class="cbi-input-user" type="text" name="luci_username" value="" />
+6.修改/usr/lib/lua/luci/controller/admin/servicectl.lua
+将entry({“servicectl”}, alias(“servicectl”, “status”)).sysauth = {“root”}修改为entry({“servicectl”}, alias(“servicectl”, “status”)).sysauth = {“username”}。
+```
