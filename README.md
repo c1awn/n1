@@ -108,8 +108,24 @@ server-tls 208.67.222.222:853 -group gfwlist
 
 ## 2. 主路由模式
 
-测试时无vlan交换机，发现就算正常上网了，仍存在两个问题：
+无vlan交换机，[参考教程](https://www.right.com.cn/forum/thread-572715-1-1.html)，其中尤其注意的是iptables规则，是`iptables -t nat -I POSTROUTING -o pppoe-WAN -j MASQUERADE`，非`“iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE”`。
 
-- n1端口完全暴露在公网，尽管防火墙的wan入站设为“拒绝”，更奇怪的是间歇性自动关闭了端口暴露。
+**eth0的动态伪装只适用旁路由模式，如果在主路由模式开启eth0动态伪装，那端口转发会失效。**
+
+另，发现一个可能和iptables允许self入站的现象：同一个局域网的设备通过**公网**探测openwrt的22等端口是通的，导致我以为wan的入站拒绝是摆设，“特么全部暴露在公网了？”，其实探测端换一个公网环境再通过公网探测openwrt的端口就是timeout。
+
+其他：
+
+- 防火墙-区域-wan-转发选择“拒绝”，上面的“基本设置”的转发选择“接受”，那端口转发还是正常的，说明“基本设置”是一个全局策略
   
-- 上网间歇性异常，主要是国内不能访问，但出国正常，可能和上面是一个问题
+- 防火墙-区域-lan，尾部的两个√不需要勾选，即ip动态伪装和mss钳制不需要
+  
+
+## 3. openclash的问题
+
+openclash的dns总是有奇葩的问题，和模式无关。即使在“自定义上游dns”配置了当地运营商的dns，默认的dns全部丢弃，国内访问还是很慢。具体的指标参考：不开启openclash，打开贝壳网1.5s，开启openclash后20s（debug显示一直在加载）。
+
+| 模式  | 大缺陷 | 备注  |
+| --- | --- | --- |
+| redir-host | youtube可以打开，但是一直黑屏+转圈 | 怀疑是dns问题 |
+| fake-ip | ddns通过请求ip.3322.net的ip错误 | 解决ddns的办法：dns高级设置自定义fakeip的filter域名 |
