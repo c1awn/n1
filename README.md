@@ -127,7 +127,7 @@ ssr+和openclash的对比：
 - openclash可能导致国内反应慢或者YouTube不能正常播放，应该都和dns相关
   
 
-无vlan交换机，[N1作为主路由参考](https://www.right.com.cn/forum/thread-572715-1-1.html)，其中尤其注意的是iptables规则，是`iptables -t nat -I POSTROUTING -o pppoe-WAN -j MASQUERADE`，非`“iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE”`。
+无vlan交换机，[N1作为主路由参考](https://www.right.com.cn/forum/thread-572715-1-1.html)，其中尤其注意的是iptables规则，是`iptables -t nat -I POSTROUTING -o pppoe-wan -j MASQUERADE`，非`“iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE”`。
 
 **eth0的动态伪装只适用旁路由模式，如果在主路由模式开启eth0动态伪装，那端口转发会失效。**
 
