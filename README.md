@@ -108,7 +108,26 @@ server-tls 208.67.222.222:853 -group gfwlist
 
 ## 2. 主路由模式
 
-无vlan交换机，[参考教程](https://www.right.com.cn/forum/thread-572715-1-1.html)，其中尤其注意的是iptables规则，是`iptables -t nat -I POSTROUTING -o pppoe-WAN -j MASQUERADE`，非`“iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE”`。
+主路由的优点：
+
+- 端口转发等规则更加灵活，而且通过openwrt端口转发进入局域网的服务器，w显示的源ip是“真实ip”而非路由器的ip
+  
+- 入站规则更加灵活
+  
+
+主路由的缺点：
+
+- 启用openclash等插件后，可能影响国内访问的速度。
+  
+
+ssr+和openclash的对比：
+
+- ssr+功能简单，分流规则太弱，同样的梯子，可能ssr+不能打开Netflix，而openclash可以打开。
+  
+- openclash可能导致国内反应慢或者YouTube不能正常播放，应该都和dns相关
+  
+
+无vlan交换机，[参考教程]([N1作为主路由，同时开启PPPOE拨号、DNS、DHCP、去广告等各种功能！-斐讯无线路由器以及其它斐迅网络设备-恩山无线论坛 - Powered by Discuz!](https://www.right.com.cn/forum/thread-572715-1-1.html)) ，其中尤其注意的是iptables规则，是`iptables -t nat -I POSTROUTING -o pppoe-WAN -j MASQUERADE`，非`“iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE”`。
 
 **eth0的动态伪装只适用旁路由模式，如果在主路由模式开启eth0动态伪装，那端口转发会失效。**
 
