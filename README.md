@@ -35,7 +35,6 @@ iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE
 ```
 
 8. 如果使用openclash，建议redir-host模式，fakeip虽然更快但是对国内也有影响。同样的梯子，clash或者quanx可以访问Netflix，ssr plus插件不一定可以，这个应该和DNS和Netflix的分流IP段有关系，特别是DNS，故如果ssr+无法观看Netflix，可以尝试clash。
-  
 
 - smartdns自定义配置，此插件收效甚微
 
@@ -118,18 +117,13 @@ server-tls 208.67.222.222:853 -group gfwlist
 主路由的缺点：
 
 - 启用openclash等插件后，可能影响国内访问的速度。
-  
+- 主路由挂了，全家网络都受影响
 
-ssr+和openclash的对比：
+主路由配置方法：
 
-- ssr+功能简单，分流规则太弱，同样的梯子，可能ssr+不能打开Netflix，而openclash可以打开。
-  
-- openclash可能导致国内反应慢或者YouTube不能正常播放，应该都和dns相关
-  
+无vlan交换机，[N1作为主路由参考配置](https://www.right.com.cn/forum/thread-572715-1-1.html)，其中尤其注意的是iptables规则，是`iptables -t nat -I POSTROUTING -o pppoe-wan -j MASQUERADE`，非`“iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE”`。
 
-无vlan交换机，[N1作为主路由参考](https://www.right.com.cn/forum/thread-572715-1-1.html)，其中尤其注意的是iptables规则，是`iptables -t nat -I POSTROUTING -o pppoe-wan -j MASQUERADE`，非`“iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE”`。
-
-**eth0的动态伪装只适用旁路由模式，如果在主路由模式开启eth0动态伪装，那端口转发会失效。**
+**注意：eth0的动态伪装只适用旁路由模式，如果在主路由模式开启eth0动态伪装，那端口转发会失效。**
 
 另，发现一个可能和iptables允许self入站的现象：同一个局域网的设备通过**公网**探测openwrt的22等端口是通的，导致我以为wan的入站拒绝是摆设，“特么全部暴露在公网了？”，其实探测端换一个公网环境再通过公网探测openwrt的端口就是timeout。
 
@@ -142,9 +136,31 @@ ssr+和openclash的对比：
 
 ## 3. openclash的问题
 
-openclash的dns总是有奇葩的问题，和模式无关。即使在“自定义上游dns”配置了当地运营商的dns，默认的dns全部丢弃，国内访问还是很慢。具体的指标参考：不开启openclash，打开贝壳网1.5s，开启openclash后20s（debug显示一直在加载）。
+openclash的dns总是有奇葩的问题，和模式无关。即使在“自定义上游dns”配置了当地运营商的dns，默认的dns全部丢弃，国内访问还是很慢。具体的指标参考：不开启openclash，打开贝壳网二手房主页的900ms-1.2s，开启openclash后3.5s-3.8s，差距近四倍。
 
 | 模式  | 大缺陷 | 备注  |
 | --- | --- | --- |
 | redir-host | youtube可以打开，但是一直黑屏+转圈 | 怀疑是dns问题 |
 | fake-ip | ddns通过请求ip.3322.net的ip错误 | 解决ddns的办法：dns高级设置自定义fakeip的filter域名 |
+
+为了验证smartdns是否有帮助，在openclash的fakeIP模式下，openclash的dns设置如下：
+
+- [ ] 勾选`本地DNS劫持`、`自定义上游DNS服务器`和`禁止Dnsmasq缓存DNS`
+  
+- [ ] 网络-dhcp/dns的`dns转发` 默认为空，因为`本地DNS劫持` 后会修改这里。同时，既然已经劫持本地dns，那理论上lan接口的dns配置可为空，也可以有值
+  
+- [ ] 自定义上游DNS服务器中的`Nameserver` 为smartdns，127.0.0.1的6053/udp
+  
+- [ ] smartdns的重定向选`无` ，dns填本地运营商和几个公共的dns
+  
+
+上述设置后，dns路线是先经过openclash，再通过自定义nameserver请求smartdns。****可结果不如人意，打开贝壳网二手房主页依旧是3.5s-3.8s，和没开启smartdns之前一样****。不过想一想，openclash的自定义dns不管是smartdns还是直接填写本地运营商，其实是一回事，因为smartdns配置的也是本地运营商等dns。
+
+ssr+和openclash的对比：
+
+- ssr+功能简单，分流规则太弱，同样的梯子，可能ssr+不能打开**Netflix**，而openclash可以打开。
+  
+- openclash可能导致**国内网站肉眼可见的慢**或者**YouTube不能正常播放**，应该都和dns相关
+  
+
+最后，主路由模式下，放弃openclash，选择了ssr+
