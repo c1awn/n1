@@ -1,5 +1,13 @@
 # N1盒子备忘录
 
+## 写在前面
+
+如果不需要端口转发，那主路由模式下，放弃openclash，选择ssr+；
+
+如果需要端口转发，只能放弃N1主路由方案。因为**N1做主路由，只能转发路由器本身的端口；N1做旁路由，那端口转发是主路由的事** 。
+
+---
+
 ## 1. 旁路由模式
 
 如果已经刷入 "2020-*-*-N1_Openwrt_R20.12.26_amlogic-5.4.83-50+o-增强版" 类似固件，打算升级了，怎么做？
@@ -35,6 +43,7 @@ iptables -t nat -I POSTROUTING -o eth0 -j MASQUERADE
 ```
 
 8. 如果使用openclash，建议redir-host模式，fakeip虽然更快但是对国内也有影响。同样的梯子，clash或者quanx可以访问Netflix，ssr plus插件不一定可以，这个应该和DNS和Netflix的分流IP段有关系，特别是DNS，故如果ssr+无法观看Netflix，可以尝试clash。
+  
 
 - smartdns自定义配置，此插件收效甚微
 
@@ -109,13 +118,15 @@ server-tls 208.67.222.222:853 -group gfwlist
 
 主路由的优点：
 
-- 端口转发等规则更加灵活，而且通过openwrt端口转发进入局域网的服务器，w显示的源ip是“真实ip”而非路由器的ip
+- 端口转发等规则更加灵活
   
 - 入站规则更加灵活
   
 
 主路由的缺点：
 
+- 端口转发可能失效，至少我没找到成功案例。即使在规则搭配了规则`iptables -t nat -I PREROUTING -i pppoe-wan -p tcp --dport 外网暴露端口号 -j DNAT --to-destination 内网ip:实际端口号`也无效。[参见 X86 openwrt的端口转发不起作用](https://www.right.com.cn/forum/thread-3157978-1-1.html) 和[N1 Openwrt端口转发群晖NAS失败](https://www.right.com.cn/forum/thread-2691645-1-1.html)
+- nat loop可能有缺陷，[参见 lean版固件NAT 回环问题 · Issue #356 · stupidloud/nanopi-openwrt · GitHub](https://github.com/stupidloud/nanopi-openwrt/issues/356)
 - 启用openclash等插件后，可能影响国内访问的速度。
 - 主路由挂了，全家网络都受影响
 
@@ -125,7 +136,7 @@ server-tls 208.67.222.222:853 -group gfwlist
 
 **注意：eth0的动态伪装只适用旁路由模式，如果在主路由模式开启eth0动态伪装，那端口转发会失效。**
 
-另，发现一个可能和iptables允许self入站的现象：同一个局域网的设备通过**公网**探测openwrt的22等端口是通的，导致我以为wan的入站拒绝是摆设，“特么全部暴露在公网了？”，其实探测端换一个公网环境再通过公网探测openwrt的端口就是timeout。
+另，发现一个~~可能和iptables允许self入站的现象~~bug（nat loop缺陷，可能和固件有关）：同一个局域网的设备通过**公网**探测openwrt的22等端口是通的，导致我以为wan的入站拒绝是摆设，“特么全部暴露在公网了？”，其实探测端换一个公网环境再通过公网探测openwrt的端口就是timeout。
 
 其他：
 
@@ -161,6 +172,3 @@ ssr+和openclash的对比：
 - ssr+功能简单，分流规则太弱，同样的梯子，可能ssr+不能打开**Netflix**，而openclash可以打开。
   
 - openclash可能导致**国内网站肉眼可见的慢**或者**YouTube不能正常播放**，应该都和dns相关
-  
-
-最后，主路由模式下，放弃openclash，选择了ssr+
