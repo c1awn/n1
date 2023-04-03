@@ -170,6 +170,6 @@ openclash的dns总是有奇葩的问题，和模式无关。即使在“自定�
 
 ssr+和openclash的对比：
 
-- ssr+功能简单，分流规则太弱，同样的梯子，可能ssr+不能打开**Netflix**，而openclash可以打开。
+- ssr+功能简单，分流规则太弱，~~同样的梯子，可能ssr+不能打开**Netflix**，而openclash可以打开。~~ ssr+版本更新后对Netflix分流已升级，高级设置可以定义在线的Netflix ip段，也可以自定义。
   
 - openclash可能导致**国内网站肉眼可见的慢**或者**YouTube不能正常播放**，应该都和dns相关
